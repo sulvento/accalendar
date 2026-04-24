@@ -1,14 +1,16 @@
 import React from "react";
 import './App.css';
-// import Welcome from "./screens/Welcome"
-import Calendar from "./Components/Calendar"
+import { Routes, Route } from "react-router-dom"
+import Welcome from "./screens/Welcome"
+import Calendar from "./Components/Calendar";
+
 
 function App() {
   return (
-    <div>
-      {/* <Welcome/> */}
-      <Calendar/>
-    </div>
+    <Routes>
+      <Route path="/" element={<Welcome/>} />
+      <Route path="/calendar" element={<Calendar />} />
+    </Routes>
   );
 }
 
