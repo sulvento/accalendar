@@ -1,10 +1,11 @@
 // This is a button component that we will use globally
 import React from 'react';
 
-const baseStyles = "px-4 py-2 rounded font-medium transition duration-200 focus:outline-none";
+const baseStyles = "px-10 py-5 rounded font-medium transition duration-200 focus:outline-none";
 
 const variants = {
-    Enter: "bg-yellow-600 text-white hover:bg-gray-700",
+    Enter: "bg-yellow-600 text-white  hover:bg-gray-700",
+    
     
 };
 
