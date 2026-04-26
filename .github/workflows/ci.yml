@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------
+  # Job 1 — unit tests + coverage report on every commit
+  # ---------------------------------------------------------------
+  unit-tests:
+    name: Unit tests & coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+      - name: Summarise coverage
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "### Coverage summary" >> "$GITHUB_STEP_SUMMARY"
+            node -e "
+              const s = require('./coverage/coverage-summary.json').total;
+              const fmt = m => \`\${m.pct}% (\${m.covered}/\${m.total})\`;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| Lines | ' + fmt(s.lines) + ' |');
+              console.log('| Statements | ' + fmt(s.statements) + ' |');
+              console.log('| Functions | ' + fmt(s.functions) + ' |');
+              console.log('| Branches | ' + fmt(s.branches) + ' |');
+            " >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ---------------------------------------------------------------
+  # Job 2 — integration tests against a WireMock service container
+  # ---------------------------------------------------------------
+  integration-tests:
+    name: Integration tests (WireMock service)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      wiremock:
+        image: wiremock/wiremock:3.9.1
+        ports:
+          - 8080:8080
+
+    env:
+      MOCK_CANVAS_URL: http://localhost:8080
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for WireMock to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sf "$MOCK_CANVAS_URL/__admin/mappings" > /dev/null; then
+              echo "WireMock is up."
+              exit 0
+            fi
+            echo "Waiting for WireMock... ($i/30)"
+            sleep 1
+          done
+          echo "WireMock did not become ready in time."
+          exit 1
+
+      - name: Load WireMock stub mappings
+        run: |
+          curl -sf -X POST "$MOCK_CANVAS_URL/__admin/mappings/import" \
+            -H "Content-Type: application/json" \
+            -d @fixtures/wiremock-mappings.json
+          echo "Mappings loaded."
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Dump WireMock request journal on failure
+        if: failure()
+        run: |
+          echo "::group::WireMock requests received"
+          curl -s "$MOCK_CANVAS_URL/__admin/requests" | head -c 50000 || true
+          echo "::endgroup::"
