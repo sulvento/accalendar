@@ -1,0 +1,16 @@
+{
+  "name": "canvas-grading-script",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node canvasapi.js",
+    "test": "vitest run --exclude '**/*.integration.test.js'",
+    "test:coverage": "vitest run --coverage --exclude '**/*.integration.test.js'",
+    "test:integration": "vitest run canvasapi.integration.test.js"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "vitest": "^2.1.8"
+  }
+}
