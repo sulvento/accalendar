@@ -269,7 +269,7 @@ describe("Canvas grading script", () => {
     await runScript();
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    const [warnMessage, , errorText] = warnSpy.mock.calls[0];
+    const [warnMessage, errorText] = warnSpy.mock.calls[0];
     expect(warnMessage).toContain('"HW1"');
     expect(errorText).toBe("Assignment not found");
 
