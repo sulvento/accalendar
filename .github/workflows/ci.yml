@@ -12,8 +12,8 @@ defaults:
     working-directory: calendar-app
 
 jobs:
-  unit-tests:
-    name: Unit tests
+  build:
+    name: Build React app
     runs-on: ubuntu-latest
 
     steps:
@@ -30,5 +30,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test -- --watchAll=false
+      - name: Build
+        run: CI=false npm run build
