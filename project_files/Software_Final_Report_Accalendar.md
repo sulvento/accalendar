@@ -112,6 +112,8 @@ Student interviews indicated the need for:
 
 ## Visual Aids
 
+### System workflow diagram: See project_files for image
+
 ### MVP Breakdown
 
 | Task | Estimated Hours |
