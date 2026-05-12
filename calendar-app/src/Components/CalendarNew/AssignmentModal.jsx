@@ -1,4 +1,16 @@
+import React from "react"
 import { useTheme } from "../../ThemeContext"
+
+const URL_REGEX = /(https?:\/\/[^\s<>"]+)/g
+
+const ALLOWED_TAGS = new Set([
+  "p", "div", "span", "br", "hr",
+  "b", "strong", "i", "em", "u", "s", "strike",
+  "ul", "ol", "li",
+  "h1", "h2", "h3", "h4", "h5", "h6",
+  "blockquote", "pre", "code",
+  "table", "thead", "tbody", "tr", "th", "td"
+])
 
 function getStatusColor(status, theme) {
   if (status === "submitted") return theme.statusSubmitted
@@ -14,24 +26,116 @@ function getStatusLabel(status) {
   return "Not submitted"
 }
 
+function linkStyle(theme) {
+  return {
+    color: theme.accent,
+    textDecoration: "underline",
+    wordBreak: "break-word"
+  }
+}
+
+function autolinkText(text, theme, keyPrefix) {
+  if (!text) return null
+
+  const parts = text.split(URL_REGEX)
+
+  return parts.map((part, i) => {
+    if (/^https?:\/\//.test(part)) {
+      return React.createElement(
+        "a",
+        {
+          key: `${keyPrefix}-${i}`,
+          href: part,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          style: linkStyle(theme)
+        },
+        part
+      )
+    }
+    return part
+  })
+}
+
+function nodeToReact(node, theme, keyPrefix) {
+  if (node.nodeType === 3) {
+    const text = node.textContent
+    if (!text) return null
+    return (
+      <React.Fragment key={keyPrefix}>
+        {autolinkText(text, theme, keyPrefix)}
+      </React.Fragment>
+    )
+  }
+
+  if (node.nodeType !== 1) return null
+
+  const tag = node.tagName.toLowerCase()
+
+  if (tag === "br") return <br key={keyPrefix} />
+  if (tag === "hr") return <hr key={keyPrefix} />
+  if (tag === "img" || tag === "script" || tag === "style" || tag === "iframe") {
+    return null
+  }
+
+  const children = Array.from(node.childNodes).map((child, i) =>
+    nodeToReact(child, theme, `${keyPrefix}-${i}`)
+  )
+
+  if (tag === "a") {
+    const href = node.getAttribute("href")
+    if (!href) {
+      return <span key={keyPrefix}>{children}</span>
+    }
+    return React.createElement(
+      "a",
+      {
+        key: keyPrefix,
+        href: href,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: linkStyle(theme)
+      },
+      children
+    )
+  }
+
+  if (ALLOWED_TAGS.has(tag)) {
+    return React.createElement(tag, { key: keyPrefix }, children)
+  }
+
+  return <span key={keyPrefix}>{children}</span>
+}
+
+function renderDescription(html, theme) {
+  if (!html || typeof html !== "string") {
+    return "No description available"
+  }
+
+  const trimmed = html.trim()
+  if (!trimmed) return "No description available"
+
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(trimmed, "text/html")
+    const nodes = Array.from(doc.body.childNodes)
+
+    if (nodes.length === 0) {
+      return autolinkText(trimmed, theme, "plain")
+    }
+
+    return nodes.map((node, i) => nodeToReact(node, theme, `root-${i}`))
+  } catch (e) {
+    return autolinkText(trimmed, theme, "plain")
+  }
+}
+
 function AssignmentModal({ assignment, closeModal }) {
   const { theme } = useTheme()
 
-  function cleanDescription(htmlText) {
-    if (!htmlText) {
-      return "No description available"
-    }
-
-    const temp = document.createElement("div")
-    temp.innerHTML = htmlText
-
-    const text = temp.textContent || temp.innerText || ""
-    return text.trim()
-  }
-
-  const description = cleanDescription(assignment.description)
   const statusColor = getStatusColor(assignment.submissionStatus, theme)
   const statusLabel = getStatusLabel(assignment.submissionStatus)
+  const renderedDescription = renderDescription(assignment.description, theme)
 
   return (
     <div style={{
@@ -97,21 +201,20 @@ function AssignmentModal({ assignment, closeModal }) {
 
         <div style={{ marginTop: "12px" }}>
           <strong>Description:</strong>
-          <p style={{
+          <div style={{
             fontSize: "14px",
             lineHeight: "1.4",
-            maxHeight: "180px",
+            maxHeight: "240px",
             overflowY: "auto",
             backgroundColor: theme.surfaceAlt,
             color: theme.text,
             padding: "10px",
             borderRadius: "8px",
-            whiteSpace: "pre-wrap"
+            whiteSpace: "normal",
+            wordBreak: "break-word"
           }}>
-            {description.length > 800
-              ? description.slice(0, 800) + "..."
-              : description}
-          </p>
+            {renderedDescription}
+          </div>
         </div>
 
         <div style={{
