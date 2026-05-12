@@ -19,6 +19,7 @@ const assignments = [
     course: "CS",
     type: "Homework",
     status: "Not Started",
+    submissionStatus: "submitted",
     description: "Mock Canvas assignment details for frontend testing."
   },
   {
@@ -28,6 +29,7 @@ const assignments = [
     course: "MATH",
     type: "Quiz",
     status: "Upcoming",
+    submissionStatus: "unsubmitted",
     description: "Mock Canvas assignment details for frontend testing."
   }
 ]
@@ -43,6 +45,32 @@ function readNotes() {
 
 function saveNotes(notes) {
   fs.writeFileSync(notesFile, JSON.stringify(notes, null, 2))
+}
+
+function deriveSubmissionStatus(submission) {
+  if (!submission) {
+    return "unsubmitted"
+  }
+
+  if (submission.missing) {
+    return "missing"
+  }
+
+  const state = submission.workflow_state
+
+  if (state === "graded") {
+    return "graded"
+  }
+
+  if (state === "submitted" || state === "pending_review") {
+    return "submitted"
+  }
+
+  if (submission.submitted_at) {
+    return "submitted"
+  }
+
+  return "unsubmitted"
 }
 
 app.get("/debug", (req, res) => {
@@ -81,27 +109,29 @@ app.get("/assignments", async (req, res) => {
       })
     }
 
-const courses = await coursesRes.json()
-console.log("Number of courses:", courses.length)
+    const courses = await coursesRes.json()
+    console.log("Number of courses:", courses.length)
 
-const allAssignments = []
+    const allAssignments = []
 
-for (const course of courses) {
-  const assignmentsRes = await fetch(
-    `${process.env.CANVAS_BASE_URL}/api/v1/courses/${course.id}/assignments?per_page=100`,
-    { headers }
-  )
+    for (const course of courses) {
+      const assignmentsRes = await fetch(
+        `${process.env.CANVAS_BASE_URL}/api/v1/courses/${course.id}/assignments?include[]=submission&per_page=100`,
+        { headers }
+      )
 
-  if (!assignmentsRes.ok) {
-    console.log("Could not fetch assignments for", course.name)
-    continue
-  }
+      if (!assignmentsRes.ok) {
+        console.log("Could not fetch assignments for", course.name)
+        continue
+      }
 
       const courseAssignments = await assignmentsRes.json()
       console.log(course.name, "assignments:", courseAssignments.length)
 
       courseAssignments.forEach(a => {
         if (a.due_at) {
+          const submissionStatus = deriveSubmissionStatus(a.submission)
+
           allAssignments.push({
             id: a.id,
             title: a.name || "Canvas Assignment",
@@ -109,6 +139,9 @@ for (const course of courses) {
             course: course.name || "Canvas",
             type: "Canvas Assignment",
             status: "Canvas",
+            submissionStatus: submissionStatus,
+            score: a.submission ? a.submission.score : null,
+            pointsPossible: a.points_possible || null,
             description: a.description || "No description available"
           })
         }

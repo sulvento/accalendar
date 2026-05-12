@@ -1,5 +1,19 @@
 import { useTheme } from "../../ThemeContext"
 
+function getStatusColor(status, theme) {
+  if (status === "submitted") return theme.statusSubmitted
+  if (status === "graded") return theme.statusGraded
+  if (status === "missing") return theme.statusMissing
+  return theme.statusUnsubmitted
+}
+
+function getStatusLabel(status) {
+  if (status === "submitted") return "Submitted"
+  if (status === "graded") return "Graded"
+  if (status === "missing") return "Missing"
+  return "Not submitted"
+}
+
 function AssignmentModal({ assignment, closeModal }) {
   const { theme } = useTheme()
 
@@ -16,6 +30,8 @@ function AssignmentModal({ assignment, closeModal }) {
   }
 
   const description = cleanDescription(assignment.description)
+  const statusColor = getStatusColor(assignment.submissionStatus, theme)
+  const statusLabel = getStatusLabel(assignment.submissionStatus)
 
   return (
     <div style={{
@@ -51,8 +67,32 @@ function AssignmentModal({ assignment, closeModal }) {
           <p><strong>Type:</strong> {assignment.type}</p>
         )}
 
-        {assignment.status && (
-          <p><strong>Status:</strong> {assignment.status}</p>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          margin: "8px 0"
+        }}>
+          <strong>Status:</strong>
+          <span style={{
+            width: "10px",
+            height: "10px",
+            borderRadius: "50%",
+            backgroundColor: statusColor,
+            border: assignment.submissionStatus === "unsubmitted"
+              ? `1px solid ${theme.textMuted}`
+              : "none",
+            flexShrink: 0
+          }} />
+          <span>{statusLabel}</span>
+        </div>
+
+        {assignment.submissionStatus === "graded" &&
+         assignment.score != null &&
+         assignment.pointsPossible != null && (
+          <p>
+            <strong>Score:</strong> {assignment.score} / {assignment.pointsPossible}
+          </p>
         )}
 
         <div style={{ marginTop: "12px" }}>
