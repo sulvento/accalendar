@@ -4,10 +4,12 @@ import FilterBar from "./FilterBar"
 import NoteModal from "./NoteModal"
 import AssignmentModal from "./AssignmentModal"
 import DeleteNoteModal from "./DeleteNoteModal"
+import { useTheme } from "../../ThemeContext"
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function CalendarMain() {
+  const { darkMode, setDarkMode, theme } = useTheme()
   const today = new Date()
 
   const [assignments, setAssignments] = useState([])
@@ -74,13 +76,39 @@ function CalendarMain() {
     <div style={{
       padding: "20px",
       fontFamily: "Arial, sans-serif",
-      backgroundColor: "#f5f7fb",
-      minHeight: "100vh"
+      backgroundColor: theme.bg,
+      color: theme.text,
+      minHeight: "100vh",
+      position: "relative"
     }}>
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        aria-label="Toggle dark mode"
+        title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          padding: "8px 14px",
+          fontSize: "14px",
+          borderRadius: "8px",
+          border: `1px solid ${theme.border}`,
+          backgroundColor: theme.surface,
+          color: theme.text,
+          cursor: "pointer",
+          boxShadow: theme.shadow,
+          zIndex: 100,
+          minWidth: "80px"
+        }}
+      >
+        {darkMode ? "☀ Light" : "🌙 Dark"}
+      </button>
+
       <h1 style={{
         textAlign: "center",
         marginBottom: "12px",
-        fontSize: "28px"
+        fontSize: "28px",
+        color: theme.text
       }}>
         Accalendar
       </h1>
@@ -98,8 +126,9 @@ function CalendarMain() {
             padding: "5px 10px",
             fontSize: "14px",
             borderRadius: "7px",
-            border: "1px solid #cfd8e3",
-            backgroundColor: "white",
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.surface,
+            color: theme.text,
             cursor: "pointer"
           }}
         >
@@ -114,6 +143,7 @@ function CalendarMain() {
             fontWeight: "bold",
             border: "none",
             backgroundColor: "transparent",
+            color: theme.text,
             cursor: "pointer"
           }}
         >
@@ -126,8 +156,9 @@ function CalendarMain() {
             padding: "5px 10px",
             fontSize: "14px",
             borderRadius: "7px",
-            border: "1px solid #cfd8e3",
-            backgroundColor: "white",
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.surface,
+            color: theme.text,
             cursor: "pointer"
           }}
         >
@@ -136,7 +167,7 @@ function CalendarMain() {
       </div>
 
       <FilterBar filter={filter} setFilter={setFilter} />
-      <p style={{ textAlign: "center", fontSize: "14px" }}>
+      <p style={{ textAlign: "center", fontSize: "14px", color: theme.textMuted }}>
         Loaded {assignments.length} Canvas assignments
       </p>
 
@@ -154,7 +185,8 @@ function CalendarMain() {
               fontWeight: "bold",
               textAlign: "center",
               padding: "10px 0",
-              backgroundColor: "#dfe7f3",
+              backgroundColor: theme.weekHeader,
+              color: theme.weekHeaderText,
               borderRadius: "8px"
             }}
           >

@@ -1,5 +1,17 @@
+import { useTheme } from "../../ThemeContext"
+
 function DeleteNoteModal({ note, confirmDelete, cancelDelete }) {
+  const { theme } = useTheme()
   const preview = note.length > 100 ? note.slice(0, 100) + "..." : note
+
+  const buttonStyle = {
+    padding: "6px 14px",
+    borderRadius: "6px",
+    border: `1px solid ${theme.border}`,
+    backgroundColor: theme.surfaceAlt,
+    color: theme.text,
+    cursor: "pointer"
+  }
 
   return (
     <div style={{
@@ -8,26 +20,28 @@ function DeleteNoteModal({ note, confirmDelete, cancelDelete }) {
       left: 0,
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(0,0,0,0.3)",
+      backgroundColor: theme.modalOverlay,
       display: "flex",
       justifyContent: "center",
       alignItems: "center"
     }}>
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: theme.surface,
+        color: theme.text,
         padding: "20px",
         borderRadius: "10px",
         width: "340px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.15)"
+        boxShadow: theme.modalShadow
       }}>
-        <h3 style={{ marginTop: 0 }}>Delete this note?</h3>
+        <h3 style={{ marginTop: 0, color: theme.text }}>Delete this note?</h3>
 
-        <p style={{ fontSize: "14px" }}>
+        <p style={{ fontSize: "14px", color: theme.textMuted }}>
           Preview:
         </p>
 
         <div style={{
-          backgroundColor: "#fff4a8",
+          backgroundColor: theme.note,
+          color: theme.noteText,
           padding: "8px",
           borderRadius: "6px",
           fontSize: "13px",
@@ -42,8 +56,8 @@ function DeleteNoteModal({ note, confirmDelete, cancelDelete }) {
           justifyContent: "flex-end",
           gap: "10px"
         }}>
-          <button onClick={cancelDelete}>No</button>
-          <button onClick={confirmDelete}>Yes</button>
+          <button style={buttonStyle} onClick={cancelDelete}>No</button>
+          <button style={buttonStyle} onClick={confirmDelete}>Yes</button>
         </div>
       </div>
     </div>

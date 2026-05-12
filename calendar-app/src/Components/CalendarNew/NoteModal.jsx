@@ -1,4 +1,17 @@
+import { useTheme } from "../../ThemeContext"
+
 function NoteModal({ selectedDate, noteText, setNoteText, saveNote, closeModal }) {
+  const { theme } = useTheme()
+
+  const buttonStyle = {
+    padding: "6px 14px",
+    borderRadius: "6px",
+    border: `1px solid ${theme.border}`,
+    backgroundColor: theme.surfaceAlt,
+    color: theme.text,
+    cursor: "pointer"
+  }
+
   return (
     <div style={{
       position: "fixed",
@@ -6,20 +19,22 @@ function NoteModal({ selectedDate, noteText, setNoteText, saveNote, closeModal }
       left: 0,
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(0,0,0,0.3)",
+      backgroundColor: theme.modalOverlay,
       display: "flex",
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      zIndex: 9999
     }}>
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: theme.surface,
+        color: theme.text,
         padding: "20px",
         borderRadius: "10px",
         width: "320px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.15)"
+        boxShadow: theme.modalShadow
       }}>
-        <h3 style={{ marginTop: 0 }}>Post-it Note</h3>
-        <p style={{ fontSize: "14px", marginBottom: "10px" }}>
+        <h3 style={{ marginTop: 0, color: theme.text }}>Post-it Note</h3>
+        <p style={{ fontSize: "14px", marginBottom: "10px", color: theme.textMuted }}>
           {selectedDate}
         </p>
 
@@ -32,7 +47,9 @@ function NoteModal({ selectedDate, noteText, setNoteText, saveNote, closeModal }
             width: "100%",
             padding: "8px",
             borderRadius: "8px",
-            border: "1px solid #cfd8e3",
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.surfaceAlt,
+            color: theme.text,
             resize: "none",
             boxSizing: "border-box"
           }}
@@ -44,8 +61,8 @@ function NoteModal({ selectedDate, noteText, setNoteText, saveNote, closeModal }
           gap: "10px",
           marginTop: "15px"
         }}>
-          <button onClick={closeModal}>Cancel</button>
-          <button onClick={saveNote}>Save</button>
+          <button style={buttonStyle} onClick={closeModal}>Cancel</button>
+          <button style={buttonStyle} onClick={saveNote}>Save</button>
         </div>
       </div>
     </div>

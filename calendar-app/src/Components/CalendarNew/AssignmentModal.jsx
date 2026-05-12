@@ -1,4 +1,8 @@
+import { useTheme } from "../../ThemeContext"
+
 function AssignmentModal({ assignment, closeModal }) {
+  const { theme } = useTheme()
+
   function cleanDescription(htmlText) {
     if (!htmlText) {
       return "No description available"
@@ -20,22 +24,23 @@ function AssignmentModal({ assignment, closeModal }) {
       left: 0,
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(0,0,0,0.35)",
+      backgroundColor: theme.modalOverlay,
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       zIndex: 9999
     }}>
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: theme.surface,
+        color: theme.text,
         padding: "22px",
         borderRadius: "12px",
         width: "420px",
         maxHeight: "75vh",
         overflowY: "auto",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.2)"
+        boxShadow: theme.modalShadow
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: "12px" }}>
+        <h3 style={{ marginTop: 0, marginBottom: "12px", color: theme.text }}>
           {assignment.title}
         </h3>
 
@@ -57,7 +62,8 @@ function AssignmentModal({ assignment, closeModal }) {
             lineHeight: "1.4",
             maxHeight: "180px",
             overflowY: "auto",
-            backgroundColor: "#f5f7fb",
+            backgroundColor: theme.surfaceAlt,
+            color: theme.text,
             padding: "10px",
             borderRadius: "8px",
             whiteSpace: "pre-wrap"
@@ -73,7 +79,17 @@ function AssignmentModal({ assignment, closeModal }) {
           justifyContent: "flex-end",
           marginTop: "15px"
         }}>
-          <button onClick={closeModal}>
+          <button
+            onClick={closeModal}
+            style={{
+              padding: "6px 14px",
+              borderRadius: "6px",
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.surfaceAlt,
+              color: theme.text,
+              cursor: "pointer"
+            }}
+          >
             Close
           </button>
         </div>

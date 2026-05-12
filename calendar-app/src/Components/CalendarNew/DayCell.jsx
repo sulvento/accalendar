@@ -1,3 +1,5 @@
+import { useTheme } from "../../ThemeContext"
+
 function DayCell({
   day,
   assignments,
@@ -7,23 +9,26 @@ function DayCell({
   isToday,
   onDeleteNote
 }) {
+  const { theme } = useTheme()
+
   return (
     <div
       onClick={openNoteModal}
       style={{
-        border: isToday ? "2px solid #4f83ff" : "1px solid #cfd8e3",
+        border: isToday ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`,
         borderRadius: "10px",
         minHeight: "110px",
         padding: "8px",
-        backgroundColor: isToday ? "#dbe8ff" : "white",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        backgroundColor: isToday ? theme.accentBg : theme.surface,
+        color: theme.text,
+        boxShadow: theme.shadow,
         cursor: "pointer"
       }}
     >
       <div style={{
         fontWeight: "bold",
         marginBottom: "6px",
-        color: isToday ? "#1d4ed8" : "black"
+        color: isToday ? theme.accentText : theme.text
       }}>
         {day}
       </div>
@@ -39,7 +44,8 @@ function DayCell({
             fontSize: "12px",
             marginBottom: "5px",
             padding: "4px 6px",
-            backgroundColor: "#eef3ff",
+            backgroundColor: theme.chip,
+            color: theme.chipText,
             borderRadius: "6px"
           }}
         >
@@ -52,7 +58,8 @@ function DayCell({
           style={{
             marginTop: "8px",
             padding: "6px",
-            backgroundColor: "#fff4a8",
+            backgroundColor: theme.note,
+            color: theme.noteText,
             borderRadius: "6px",
             fontSize: "12px",
             whiteSpace: "pre-wrap",
@@ -70,6 +77,7 @@ function DayCell({
               right: "4px",
               border: "none",
               backgroundColor: "transparent",
+              color: theme.noteText,
               cursor: "pointer",
               fontWeight: "bold"
             }}

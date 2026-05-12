@@ -1,4 +1,5 @@
 import DayCell from "./DayCell"
+import { useTheme } from "../../ThemeContext"
 
 function CalendarGrid({
   assignments,
@@ -10,6 +11,7 @@ function CalendarGrid({
   setSelectedAssignment,
   requestDeleteNote
 }) {
+  const { theme } = useTheme()
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
 
@@ -23,11 +25,11 @@ function CalendarGrid({
       <div
         key={"blank-" + i}
         style={{
-          border: "1px solid #e5e7eb",
+          border: `1px solid ${theme.borderSoft}`,
           borderRadius: "10px",
           minHeight: "110px",
           padding: "8px",
-          backgroundColor: "#f3f4f6",
+          backgroundColor: theme.blankCell,
           opacity: 0.6
         }}
       ></div>

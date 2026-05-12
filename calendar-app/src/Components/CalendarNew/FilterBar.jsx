@@ -1,10 +1,15 @@
+import { useTheme } from "../../ThemeContext"
+
 function FilterBar({ filter, setFilter }) {
+  const { theme } = useTheme()
+
   const buttonStyle = (val) => ({
     margin: "0 6px",
     padding: "8px 14px",
     borderRadius: "8px",
-    border: "1px solid #cfd8e3",
-    backgroundColor: filter === val ? "#dbe8ff" : "white",
+    border: `1px solid ${theme.border}`,
+    backgroundColor: filter === val ? theme.accentBg : theme.surface,
+    color: filter === val ? theme.accentText : theme.text,
     cursor: "pointer"
   })
 
