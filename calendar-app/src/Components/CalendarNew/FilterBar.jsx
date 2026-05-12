@@ -1,10 +1,10 @@
 import { useTheme } from "../../ThemeContext"
 
-function FilterBar({ filter, setFilter }) {
+function FilterBar({ filter, setFilter, availableTags }) {
   const { theme } = useTheme()
 
   const buttonStyle = (val) => ({
-    margin: "0 6px",
+    margin: "4px 6px",
     padding: "8px 14px",
     borderRadius: "8px",
     border: `1px solid ${theme.border}`,
@@ -13,20 +13,24 @@ function FilterBar({ filter, setFilter }) {
     cursor: "pointer"
   })
 
+  const tabs = ["ALL", ...availableTags]
+
   return (
-    <div style={{ textAlign: "center", marginBottom: "20px" }}>
-      <button style={buttonStyle("ALL")} onClick={() => setFilter("ALL")}>
-        All
-      </button>
-      <button style={buttonStyle("CS")} onClick={() => setFilter("CS")}>
-        CS
-      </button>
-      <button style={buttonStyle("MATH")} onClick={() => setFilter("MATH")}>
-        Math
-      </button>
-      <button style={buttonStyle("ENG")} onClick={() => setFilter("ENG")}>
-        Eng
-      </button>
+    <div style={{
+      textAlign: "center",
+      marginBottom: "20px",
+      maxWidth: "900px",
+      margin: "0 auto 20px"
+    }}>
+      {tabs.map(tag => (
+        <button
+          key={tag}
+          style={buttonStyle(tag)}
+          onClick={() => setFilter(tag)}
+        >
+          {tag === "ALL" ? "All" : tag}
+        </button>
+      ))}
     </div>
   )
 }

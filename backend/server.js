@@ -11,12 +11,52 @@ const notesFile = "notes.json"
 app.use(cors())
 app.use(express.json())
 
+const SEMESTER_PREFIXES = new Set([
+  "FA", "SP", "SU", "WI", "F", "S", "W",
+  "FALL", "SPRING", "SUMMER", "WINTER"
+])
+
+function deriveDepartmentTag(course) {
+  const code = (course.course_code || "").trim()
+  const name = (course.name || "").trim()
+
+  if (code) {
+    const chunks = code.split(/[\s\-_./]+/)
+    for (const chunk of chunks) {
+      if (/^[A-Za-z]{2,5}$/.test(chunk)) {
+        const upper = chunk.toUpperCase()
+        if (!SEMESTER_PREFIXES.has(upper)) {
+          return upper
+        }
+      }
+    }
+
+    const match = code.match(/[A-Za-z]{2,6}/)
+    if (match) {
+      const upper = match[0].toUpperCase()
+      if (!SEMESTER_PREFIXES.has(upper)) {
+        return upper
+      }
+    }
+  }
+
+  if (name) {
+    const firstWord = name.split(/\s+/)[0]
+    if (/^[A-Za-z]{2,5}$/.test(firstWord)) {
+      return firstWord.toUpperCase()
+    }
+  }
+
+  return "OTHER"
+}
+
 const assignments = [
   {
     id: 1,
     title: "CS Homework",
     dueDate: "2026-03-05",
-    course: "CS",
+    course: "Intro to Computer Science",
+    tag: "CS",
     type: "Homework",
     status: "Not Started",
     submissionStatus: "submitted",
@@ -26,8 +66,20 @@ const assignments = [
     id: 2,
     title: "Math Quiz",
     dueDate: "2026-03-12",
-    course: "MATH",
+    course: "Linear Algebra",
+    tag: "MATH",
     type: "Quiz",
+    status: "Upcoming",
+    submissionStatus: "unsubmitted",
+    description: "Mock Canvas assignment details for frontend testing."
+  },
+  {
+    id: 3,
+    title: "Essay Draft",
+    dueDate: "2026-03-18",
+    course: "Technical Writing",
+    tag: "ENG",
+    type: "Essay",
     status: "Upcoming",
     submissionStatus: "unsubmitted",
     description: "Mock Canvas assignment details for frontend testing."
@@ -39,6 +91,7 @@ const mockCourses = [
     id: 1,
     name: "Intro to Computer Science",
     courseCode: "CS",
+    tag: "CS",
     currentScore: 87.5,
     currentGrade: "B+"
   },
@@ -46,6 +99,7 @@ const mockCourses = [
     id: 2,
     name: "Linear Algebra",
     courseCode: "MATH",
+    tag: "MATH",
     currentScore: 92.3,
     currentGrade: "A-"
   },
@@ -53,6 +107,7 @@ const mockCourses = [
     id: 3,
     name: "Technical Writing",
     courseCode: "ENG",
+    tag: "ENG",
     currentScore: 78.0,
     currentGrade: "C+"
   }
@@ -139,6 +194,8 @@ app.get("/assignments", async (req, res) => {
     const allAssignments = []
 
     for (const course of courses) {
+      const courseTag = deriveDepartmentTag(course)
+
       const assignmentsRes = await fetch(
         `${process.env.CANVAS_BASE_URL}/api/v1/courses/${course.id}/assignments?include[]=submission&per_page=100`,
         { headers }
@@ -150,7 +207,7 @@ app.get("/assignments", async (req, res) => {
       }
 
       const courseAssignments = await assignmentsRes.json()
-      console.log(course.name, "assignments:", courseAssignments.length)
+      console.log(course.name, "[", courseTag, "] assignments:", courseAssignments.length)
 
       courseAssignments.forEach(a => {
         if (a.due_at) {
@@ -161,6 +218,7 @@ app.get("/assignments", async (req, res) => {
             title: a.name || "Canvas Assignment",
             dueDate: a.due_at.slice(0, 10),
             course: course.name || "Canvas",
+            tag: courseTag,
             type: "Canvas Assignment",
             status: "Canvas",
             submissionStatus: submissionStatus,
@@ -218,6 +276,7 @@ app.get("/courses", async (req, res) => {
         id: c.id,
         name: c.name || "Unnamed course",
         courseCode: c.course_code || "",
+        tag: deriveDepartmentTag(c),
         currentScore: studentEnrollment ? studentEnrollment.computed_current_score : null,
         currentGrade: studentEnrollment ? studentEnrollment.computed_current_grade : null
       }

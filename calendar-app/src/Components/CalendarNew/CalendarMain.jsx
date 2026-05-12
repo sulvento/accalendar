@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import CalendarGrid from "./CalendarGrid"
 import FilterBar from "./FilterBar"
 import NoteModal from "./NoteModal"
@@ -31,6 +31,20 @@ function CalendarMain() {
 
   const monthName = currentDate.toLocaleString("en-US", { month: "long" })
   const year = currentDate.getFullYear()
+
+  const availableTags = useMemo(() => {
+    const tags = new Set()
+    assignments.forEach(a => {
+      if (a.tag) tags.add(a.tag)
+    })
+    return Array.from(tags).sort()
+  }, [assignments])
+
+  useEffect(() => {
+    if (filter !== "ALL" && !availableTags.includes(filter)) {
+      setFilter("ALL")
+    }
+  }, [availableTags, filter])
 
   useEffect(() => {
     fetch("http://localhost:3001/notes")
@@ -169,7 +183,11 @@ function CalendarMain() {
         </button>
       </div>
 
-      <FilterBar filter={filter} setFilter={setFilter} />
+      <FilterBar
+        filter={filter}
+        setFilter={setFilter}
+        availableTags={availableTags}
+      />
       <p style={{ textAlign: "center", fontSize: "14px", color: theme.textMuted }}>
         Loaded {assignments.length} Canvas assignments
       </p>

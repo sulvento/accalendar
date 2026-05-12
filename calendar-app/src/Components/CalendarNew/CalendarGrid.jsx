@@ -41,7 +41,7 @@ function CalendarGrid({
 
     const dayAssignments = assignments
       .filter(a => a.dueDate === fullDate)
-      .filter(a => filter === "ALL" || a.course === filter)
+      .filter(a => filter === "ALL" || a.tag === filter)
 
     const note = notes[fullDate] || ""
     const today = new Date()
@@ -62,7 +62,7 @@ function CalendarGrid({
         onDeleteNote={() => requestDeleteNote(fullDate)}
         openNoteModal={() => {
           setSelectedDate(fullDate)
-          setNoteText(note)
+          setNoteText("")
         }}
       />
     )
