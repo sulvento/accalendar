@@ -6,12 +6,22 @@ import AssignmentModal from "./AssignmentModal"
 import DeleteNoteModal from "./DeleteNoteModal"
 import ClassesSidebar from "./ClassesSidebar"
 import { useTheme } from "../../ThemeContext"
+import { useNavigate } from "react-router-dom"
+
+
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function CalendarMain() {
   const { darkMode, setDarkMode, theme } = useTheme()
   const today = new Date()
+  const navigate = useNavigate();
+
+  // const handleLogout = () => {
+  //   fakeAuth.logout(() => {
+  //     navigate("/");
+  //   });
+  // };
 
   const [assignments, setAssignments] = useState([])
   const [filter, setFilter] = useState("ALL")
@@ -180,6 +190,20 @@ function CalendarMain() {
           }}
         >
           Next
+        </button>
+
+        <button
+          // onClick={handleLogout}
+          style={{
+            padding: "5px 10px",
+            fontSize: "14px",
+            borderRadius: "7px",
+            border: "1px solid #cfd8e3",
+            backgroundColor: "white",
+            cursor: "pointer"
+          }}
+        >
+          Logout
         </button>
       </div>
 
