@@ -4,6 +4,7 @@ import FilterBar from "./FilterBar"
 import NoteModal from "./NoteModal"
 import AssignmentModal from "./AssignmentModal"
 import DeleteNoteModal from "./DeleteNoteModal"
+import ClassesSidebar from "./ClassesSidebar"
 import { useTheme } from "../../ThemeContext"
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -81,6 +82,8 @@ function CalendarMain() {
       minHeight: "100vh",
       position: "relative"
     }}>
+      <ClassesSidebar />
+
       <button
         onClick={() => setDarkMode(!darkMode)}
         aria-label="Toggle dark mode"

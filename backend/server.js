@@ -34,6 +34,30 @@ const assignments = [
   }
 ]
 
+const mockCourses = [
+  {
+    id: 1,
+    name: "Intro to Computer Science",
+    courseCode: "CS",
+    currentScore: 87.5,
+    currentGrade: "B+"
+  },
+  {
+    id: 2,
+    name: "Linear Algebra",
+    courseCode: "MATH",
+    currentScore: 92.3,
+    currentGrade: "A-"
+  },
+  {
+    id: 3,
+    name: "Technical Writing",
+    courseCode: "ENG",
+    currentScore: 78.0,
+    currentGrade: "C+"
+  }
+]
+
 function readNotes() {
   if (!fs.existsSync(notesFile)) {
     return {}
@@ -152,6 +176,57 @@ app.get("/assignments", async (req, res) => {
   } catch (err) {
     console.log("Canvas fetch error:", err)
     res.status(500).json({ error: "Could not fetch Canvas assignments" })
+  }
+})
+
+app.get("/courses", async (req, res) => {
+  const useCanvas = (process.env.USE_CANVAS || "").trim()
+
+  if (useCanvas !== "true") {
+    return res.json(mockCourses)
+  }
+
+  try {
+    const headers = {
+      Authorization: `Bearer ${process.env.CANVAS_TOKEN}`
+    }
+
+    const coursesRes = await fetch(
+      `${process.env.CANVAS_BASE_URL}/api/v1/courses?enrollment_state=active&include[]=total_scores&per_page=100`,
+      { headers }
+    )
+
+    if (!coursesRes.ok) {
+      const text = await coursesRes.text()
+
+      return res.status(coursesRes.status).json({
+        error: "Could not fetch Canvas courses",
+        status: coursesRes.status,
+        details: text
+      })
+    }
+
+    const courses = await coursesRes.json()
+
+    const result = courses.map(c => {
+      const enrollments = c.enrollments || []
+      const studentEnrollment =
+        enrollments.find(e => e.type === "student" || e.type === "StudentEnrollment") ||
+        enrollments[0]
+
+      return {
+        id: c.id,
+        name: c.name || "Unnamed course",
+        courseCode: c.course_code || "",
+        currentScore: studentEnrollment ? studentEnrollment.computed_current_score : null,
+        currentGrade: studentEnrollment ? studentEnrollment.computed_current_grade : null
+      }
+    })
+
+    res.json(result)
+  } catch (err) {
+    console.log("Canvas courses fetch error:", err)
+    res.status(500).json({ error: "Could not fetch courses" })
   }
 })
 
